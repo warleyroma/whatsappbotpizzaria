@@ -1,24 +1,26 @@
-import { create, Client, Message } from '@wppconnect-team/wppconnect';
+import { create, Whatsapp } from '@wppconnect-team/wppconnect';
 import axios from 'axios';
+import { Message } from '@wppconnect-team/wppconnect/dist/api/model/message';
 
-// Configurações
 const sessionName = 'pizzaria-session';
 
-// Função para enviar dados para sua API
 async function sendToAPI(endpoint: string, data: any) {
   try {
     await axios.post(endpoint, data);
     console.log('✅ Dados enviados para a API!');
-  } catch (error) {
-    console.error('❌ Erro na API:', error.message);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('❌ Erro na API:', error.message);
+    } else {
+      console.error('❌ Erro desconhecido:', error);
+    }
   }
 }
 
-// Função para processar mensagens
 function parseMessage(message: Message) {
   const { body, from } = message;
-  
-  // Pedido (exemplo: "/pedido 2x Pizza Calabresa - R$50")
+  if (!body) return null;
+
   if (body.startsWith('/pedido')) {
     const match = body.match(/(\d+)x (.+) - R\$(.+)/);
     if (match) {
@@ -34,7 +36,6 @@ function parseMessage(message: Message) {
     }
   }
 
-  // Cliente (exemplo: "/cliente João - Rua ABC, 123")
   if (body.startsWith('/cliente')) {
     const [nome, endereco] = body.replace('/cliente ', '').split(' - ');
     return {
@@ -46,15 +47,18 @@ function parseMessage(message: Message) {
   return null;
 }
 
-// Inicializar WhatsApp
 export async function startWhatsApp() {
   const client = await create({
     session: sessionName,
-    puppeteerOptions: { headless: true }, // Modo sem interface gráfica
+    puppeteerOptions: { 
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'] 
+    },
   });
 
-  // Ouvir mensagens
-  client.onMessage(async (message) => {
+  client.onMessage(async (message: Message) => {
+    if (!message.body) return;
+    
     const parsed = parseMessage(message);
     if (!parsed) return;
 
@@ -67,7 +71,6 @@ export async function startWhatsApp() {
         break;
     }
 
-    // Opcional: Enviar confirmação
     await client.sendText(message.from, '✅ Recebemos seu pedido!');
   });
 
