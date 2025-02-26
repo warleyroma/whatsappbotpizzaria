@@ -2,9 +2,9 @@
   "name": "meu-wpp-server",
   "version": "1.0.0",
   "scripts": {
-    "build": "tsc",                   // Compila o TypeScript para JS
-    "start": "node build/index.js",   // Inicia o servidor
-    "dev": "ts-node src/index.ts"     // Opcional: Para desenvolvimento local
+    "build": "tsc",
+    "start": "node build/index.js",
+    "dev": "ts-node src/index.ts"
   },
   "dependencies": {
     "@wppconnect-team/wppconnect": "^1.24.0",
