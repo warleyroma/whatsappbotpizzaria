@@ -70,30 +70,29 @@ function parseMessage(message: Message): { tipo: string; dados: PedidoData | Cli
 }
 
 export async function startWhatsApp() {
- const client = await create({
-    session: sessionName,
-    puppeteerOptions: {
-      executablePath: chromium.path,
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu',
-        '--single-process',
-        '--no-zygote'
-      ]
-    },
+  try {
+    const client = await create({
+      session: sessionName,
+      puppeteerOptions: {
+        executablePath: chromium.path,
+        headless: 'new', // Usar o novo modo headless
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-gpu',
+          '--single-process'
+        ]
+      },
       disableWelcome: true,
       catchQR: (qrCode: string, asciiQR: string, attempt: number) => {
         console.clear();
-        console.log('🔍 Escaneie o QR Code abaixo:');
+        console.log('QR Code:');
         qrcode.generate(qrCode, { small: true });
         console.log(`Tentativa: ${attempt}`);
-        console.log('⚠️ Toque em "Mais dispositivos" no WhatsApp do seu celular!');
       },
       statusFind: (statusSession: string) => {
-        console.log('Status da sessão:', statusSession);
+        console.log('Status:', statusSession);
       }
     });
 
@@ -123,8 +122,8 @@ export async function startWhatsApp() {
       }
     });
 
-  } catch (error) {
-    console.error('Erro ao iniciar WhatsApp:', error);
+} catch (error) {
+    console.error('Erro ao iniciar:', error);
     process.exit(1);
   }
 }
