@@ -2,6 +2,8 @@ import { create, Whatsapp } from '@wppconnect-team/wppconnect';
 import axios from 'axios';
 import { Message } from '@wppconnect-team/wppconnect/dist/api/model/message';
 import chromium from 'chromium';
+import { create } from '@wppconnect-team/wppconnect';
+import qrcode from 'qrcode-terminal';
 
 const sessionName = 'pizzaria-session';
 
@@ -72,18 +74,16 @@ export async function startWhatsApp() {
   try {
     const client = await create({
       session: sessionName,
-      puppeteerOptions: {
-        executablePath: chromium.path,
-        headless: true,
-        args: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--disable-gpu'
-        ]
+      puppeteerOptions: { /* ... */ },
+      disableWelcome: true,
+
+      // ========== ADICIONE AQUI ========== //
+      onQrCode: (qrCode) => {
+        console.clear();
+        console.log('🔍 Escaneie o QR Code abaixo:');
+        qrcode.generate(qrCode, { small: true });
+        console.log('\n\n⚠️ Toque em "Mais dispositivos" no WhatsApp do seu celular para escanear!');
       },
-      disableWelcome: true
-    });
 
     console.log('🚀 WhatsApp conectado!');
 
