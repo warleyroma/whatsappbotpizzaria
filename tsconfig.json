@@ -6,6 +6,6 @@
     "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true   // Remova a vírgula extra no último item
+    "skipLibCheck": true   
   }
 }
