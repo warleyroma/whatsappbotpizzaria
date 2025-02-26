@@ -44,7 +44,7 @@ function parseMessage(message: Message): { tipo: string; dados: PedidoData | Cli
         tipo: 'pedido',
         dados: {
           produto: match[2].trim(),
-          quantidade: parseInt(match[1], // Corrigido parêntese faltando
+          quantidade: parseInt(match[1], 10)
           total: parseFloat(match[3].replace(',', '.')),
           cliente: from
         }
