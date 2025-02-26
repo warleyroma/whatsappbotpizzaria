@@ -17,5 +17,13 @@
         "@types/node": "^20.11.7",
         "typescript": "^5.3.3",
         "ts-node": "^10.9.2"
-    }
+    },
+
+    {
+  "scripts": {
+    "start": "node build/index.js",
+    "build": "tsc",
+    "dev": "ts-node src/index.ts"
+  }
+}
 }
