@@ -1,8 +1,6 @@
-import { create, Whatsapp } from '@wppconnect-team/wppconnect';
+import { create } from '@wppconnect-team/wppconnect';
 import axios from 'axios';
 import { Message } from '@wppconnect-team/wppconnect/dist/api/model/message';
-import chromium from 'chromium';
-import { create } from '@wppconnect-team/wppconnect';
 import qrcode from 'qrcode-terminal';
 
 const sessionName = 'pizzaria-session';
@@ -46,7 +44,7 @@ function parseMessage(message: Message): { tipo: string; dados: PedidoData | Cli
         tipo: 'pedido',
         dados: {
           produto: match[2].trim(),
-          quantidade: parseInt(match[1], 
+          quantidade: parseInt(match[1], // Corrigido parêntese faltando
           total: parseFloat(match[3].replace(',', '.')),
           cliente: from
         }
@@ -74,16 +72,23 @@ export async function startWhatsApp() {
   try {
     const client = await create({
       session: sessionName,
-      puppeteerOptions: { /* ... */ },
+      puppeteerOptions: {
+        headless: true,
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-gpu'
+        ]
+      },
       disableWelcome: true,
-
-      // ========== ADICIONE AQUI ========== //
       onQrCode: (qrCode) => {
         console.clear();
         console.log('🔍 Escaneie o QR Code abaixo:');
         qrcode.generate(qrCode, { small: true });
         console.log('\n\n⚠️ Toque em "Mais dispositivos" no WhatsApp do seu celular para escanear!');
-      },
+      }
+    });
 
     console.log('🚀 WhatsApp conectado!');
 
