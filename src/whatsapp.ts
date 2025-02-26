@@ -1,11 +1,13 @@
-import { create, CreateOptions } from '@wppconnect-team/wppconnect';
+import { create } from '@wppconnect-team/wppconnect';
 import axios from 'axios';
 import { Message } from '@wppconnect-team/wppconnect/dist/api/model/message';
 import qrcode from 'qrcode-terminal';
-import chromium from 'chromium';
+import 'dotenv/config'; // Carrega variáveis de ambiente do arquivo .env
 
-const sessionName = 'pizzaria-session';
+// Configurações da sessão
+const sessionName = process.env.SESSION_NAME || 'pizzaria-session';
 
+// Interfaces para tipagem
 interface PedidoData {
   produto: string;
   quantidade: number;
@@ -19,25 +21,24 @@ interface ClienteData {
   telefone: string;
 }
 
+// Função para enviar dados para a API
 async function sendToAPI(endpoint: string, data: PedidoData | ClienteData) {
+  const baseURL = process.env.API_BASE_URL || 'https://apipizzaria-ea2f.onrender.com';
   try {
-    await axios.post(endpoint, data);
+    await axios.post(`${baseURL}${endpoint}`, data);
     console.log('✅ Dados enviados para a API:', data);
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error('❌ Erro na API:', error.message);
-    } else {
-      console.error('❌ Erro desconhecido:', error);
-    }
+  } catch (error) {
+    console.error('❌ Erro na API:', error);
   }
 }
 
+// Função para processar mensagens
 function parseMessage(message: Message): { tipo: string; dados: PedidoData | ClienteData } | null {
   const { body, from } = message;
   
   if (!body) return null;
 
-  // Processar pedidos
+  // Processar pedidos (exemplo: "/pedido 2x Pizza Calabresa - R$50")
   if (body.startsWith('/pedido')) {
     const match = body.match(/(\d+)x (.+?) - R\$(\d+\.?\d*)/);
     if (match) {
@@ -53,7 +54,7 @@ function parseMessage(message: Message): { tipo: string; dados: PedidoData | Cli
     }
   }
 
-  // Processar clientes
+  // Processar clientes (exemplo: "/cliente João - Rua ABC, 123")
   if (body.startsWith('/cliente')) {
     const [nome, endereco] = body.replace('/cliente ', '').split(' - ');
     return {
@@ -69,35 +70,36 @@ function parseMessage(message: Message): { tipo: string; dados: PedidoData | Cli
   return null;
 }
 
+// Função principal para iniciar o WhatsApp
 export async function startWhatsApp() {
   try {
     const client = await create({
       session: sessionName,
       puppeteerOptions: {
-        executablePath: chromium.path,
-        headless: 'new', // Usar o novo modo headless
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium',
+        headless: true,
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
           '--disable-dev-shm-usage',
-          '--disable-gpu',
-          '--single-process'
+          '--disable-gpu'
         ]
       },
       disableWelcome: true,
-      catchQR: (qrCode: string, asciiQR: string, attempt: number) => {
+      catchQR: (qrCode: string) => {
         console.clear();
-        console.log('QR Code:');
+        console.log('🔍 Escaneie o QR Code abaixo:');
         qrcode.generate(qrCode, { small: true });
-        console.log(`Tentativa: ${attempt}`);
+        console.log('\n⚠️ Toque em "Mais dispositivos" no WhatsApp do seu celular!');
       },
       statusFind: (statusSession: string) => {
-        console.log('Status:', statusSession);
+        console.log('Status da sessão:', statusSession);
       }
     });
 
     console.log('🚀 WhatsApp conectado!');
 
+    // Ouvir mensagens recebidas
     client.onMessage(async (message: Message) => {
       try {
         if (!message.body) return;
@@ -107,11 +109,11 @@ export async function startWhatsApp() {
 
         switch (parsed.tipo) {
           case 'pedido':
-            await sendToAPI('https://apipizzaria-ea2f.onrender.com/pedidos/', parsed.dados);
+            await sendToAPI('/pedidos/', parsed.dados);
             break;
             
           case 'cliente':
-            await sendToAPI('https://apipizzaria-ea2f.onrender.com/clientes/', parsed.dados);
+            await sendToAPI('/clientes/', parsed.dados);
             break;
         }
 
@@ -122,8 +124,8 @@ export async function startWhatsApp() {
       }
     });
 
-} catch (error) {
-    console.error('Erro ao iniciar:', error);
+  } catch (error) {
+    console.error('Erro ao iniciar WhatsApp:', error);
     process.exit(1);
   }
 }
