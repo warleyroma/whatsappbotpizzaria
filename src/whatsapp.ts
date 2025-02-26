@@ -2,6 +2,7 @@ import { create, CreateOptions } from '@wppconnect-team/wppconnect';
 import axios from 'axios';
 import { Message } from '@wppconnect-team/wppconnect/dist/api/model/message';
 import qrcode from 'qrcode-terminal';
+import chromium from 'chromium';
 
 const sessionName = 'pizzaria-session';
 
@@ -69,18 +70,20 @@ function parseMessage(message: Message): { tipo: string; dados: PedidoData | Cli
 }
 
 export async function startWhatsApp() {
-  try {
-    const client = await create({
-      session: sessionName,
-      puppeteerOptions: {
-        headless: true,
-        args: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--disable-gpu'
-        ]
-      },
+ const client = await create({
+    session: sessionName,
+    puppeteerOptions: {
+      executablePath: chromium.path,
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--single-process',
+        '--no-zygote'
+      ]
+    },
       disableWelcome: true,
       catchQR: (qrCode: string, asciiQR: string, attempt: number) => {
         console.clear();
