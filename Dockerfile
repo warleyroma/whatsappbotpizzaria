@@ -1,7 +1,6 @@
-# Use a imagem base do Node.js
 FROM node:20-slim
 
-# Instale as dependências do sistema para o Chromium
+# Instala as dependências do sistema para o Chromium
 RUN apt-get update && \
     apt-get install -y \
     chromium \
@@ -19,22 +18,22 @@ RUN apt-get update && \
     libxtst6 \
     xdg-utils
 
-# Defina variáveis de ambiente
+# Define variáveis de ambiente
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
-# Configure o diretório de trabalho
+# Configura o diretório de trabalho
 WORKDIR /app
 
-# Copie os arquivos de dependência
+# Copia os arquivos de dependência
 COPY package*.json ./
 
-# Instale as dependências
+# Instala as dependências
 RUN npm install
 
-# Copie o restante do código
+# Copia o restante do código
 COPY . .
 
-# Compile o projeto
+# Compila o projeto
 RUN npm run build
 
 # Comando de inicialização
