@@ -1,4 +1,4 @@
-import { create } from '@wppconnect-team/wppconnect';
+import { create, CreateOptions } from '@wppconnect-team/wppconnect';
 import axios from 'axios';
 import { Message } from '@wppconnect-team/wppconnect/dist/api/model/message';
 import qrcode from 'qrcode-terminal';
