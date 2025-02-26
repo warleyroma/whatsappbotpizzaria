@@ -82,11 +82,15 @@ export async function startWhatsApp() {
         ]
       },
       disableWelcome: true,
-      onQrCode: (qrCode) => {
+      catchQR: (qrCode: string, asciiQR: string, attempt: number) => {
         console.clear();
         console.log('🔍 Escaneie o QR Code abaixo:');
         qrcode.generate(qrCode, { small: true });
-        console.log('\n\n⚠️ Toque em "Mais dispositivos" no WhatsApp do seu celular para escanear!');
+        console.log(`Tentativa: ${attempt}`);
+        console.log('⚠️ Toque em "Mais dispositivos" no WhatsApp do seu celular!');
+      },
+      statusFind: (statusSession: string) => {
+        console.log('Status da sessão:', statusSession);
       }
     });
 
